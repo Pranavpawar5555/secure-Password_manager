@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Manager</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 560px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            background: #EEEDFE;
+            border-radius: 14px;
+            padding: 1.4rem 1rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid #AFA9EC;
+        }
+
+        .header-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3C3489;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #534AB7;
+            margin-top: 4px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 9px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            color: #555;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .tab:hover:not(.active) {
+            background: #f5f5f5;
+        }
+
+        .tab.t-gen.active {
+            background: #EEEDFE;
+            color: #3C3489;
+            border-color: #AFA9EC;
+            font-weight: 700;
+        }
+
+        .tab.t-view.active {
+            background: #E1F5EE;
+            color: #085041;
+            border-color: #5DCAA5;
+            font-weight: 700;
+        }
+
+        .tab.t-search.active {
+            background: #E6F1FB;
+            color: #0C447C;
+            border-color: #85B7EB;
+            font-weight: 700;
+        }
+
+        .tab.t-del.active {
+            background: #FCEBEB;
+            color: #791F1F;
+            border-color: #F09595;
+            font-weight: 700;
+        }
+
+        /* Card */
+        .card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            padding: 1.4rem;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .section.active {
+            display: flex;
+        }
+
+        /* Fields */
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #fafafa;
+            color: #222;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #7F77DD;
+            background: #fff;
+        }
+
+        /* Range */
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .range-row input[type="range"] {
+            flex: 1;
+            accent-color: #7F77DD;
+            cursor: pointer;
+        }
+
+        .range-val {
+            font-size: 15px;
+            font-weight: 700;
+            min-width: 26px;
+            color: #3C3489;
+        }
+
+        /* Strength bar */
+        .strength-bar {
+            display: flex;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .strength-seg {
+            flex: 1;
+            height: 5px;
+            border-radius: 3px;
+            background: #ddd;
+            transition: background 0.2s;
+        }
+
+        /* Result box */
+        .result-box {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            background: #EEEDFE;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #26215C;
+            word-break: break-all;
+            border: 1px solid #AFA9EC;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+
+        /* Messages */
+        .msg {
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .msg.success {
+            background: #E1F5EE;
+            color: #085041;
+            border: 1px solid #5DCAA5;
+        }
+
+        .msg.error {
+            background: #FCEBEB;
+            color: #791F1F;
+            border: 1px solid #F09595;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 4px;
+            transition: filter 0.15s;
+        }
+
+        .btn:hover {
+            filter: brightness(0.92);
+        }
+
+        .btn-purple {
+            background: #CECBF6;
+            color: #26215C;
+        }
+
+        .btn-teal {
+            background: #9FE1CB;
+            color: #04342C;
+        }
+
+        .btn-blue {
+            background: #B5D4F4;
+            color: #042C53;
+        }
+
+        .btn-red {
+            background: #F7C1C1;
+            color: #501313;
+        }
+
+        /* Password list */
+        .pw-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pw-item {
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .pw-item:nth-child(4n+1) {
+            background: #EEEDFE;
+        }
+
+        .pw-item:nth-child(4n+2) {
+            background: #E1F5EE;
+        }
+
+        .pw-item:nth-child(4n+3) {
+            background: #E6F1FB;
+        }
+
+        .pw-item:nth-child(4n+0) {
+            background: #FAEEDA;
+        }
+
+        .pw-site {
+            font-size: 14px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .pw-pass {
+            font-size: 12px;
+            color: #555;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            word-break: break-all;
+        }
+
+        .pw-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 6px;
+            transition: background 0.12s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Empty */
+        .empty {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .empty-icon {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .tab {
+                font-size: 12px;
+                padding: 8px 6px;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <div class="header">
+            <span class="header-icon">🔒</span>
+            <h1>Password Manager</h1>
+            <p>Generate, save and manage your passwords</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab t-gen active" onclick="switchTab('generate')">✨ Generate</button>
+            <button class="tab t-view" onclick="switchTab('view')">👁 Saved</button>
+            <button class="tab t-search" onclick="switchTab('search')">🔍 Search</button>
+            <button class="tab t-del" onclick="switchTab('delete')">🗑 Delete</button>
+        </div>
+
+        <div class="card">
+
+            <!-- Generate -->
+            <div id="generate" class="section active">
+                <div class="field">
+                    <label>Password length</label>
+                    <div class="range-row">
+                        <input type="range" min="8" max="12" value="10" id="lengthSlider"
+                            oninput="updateLength(this.value)" step="1" />
+                        <span class="range-val" id="lengthVal">10</span>
+                    </div>
+                    <div class="strength-bar">
+                        <div class="strength-seg" id="s1"></div>
+                        <div class="strength-seg" id="s2"></div>
+                        <div class="strength-seg" id="s3"></div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Website name</label>
+                    <input type="text" id="websiteInput" placeholder="e.g. gmail.com" maxlength="50" />
+                </div>
+                <div class="result-box" id="resultBox">
+                    <span id="generatedPw"></span>
+                    <button class="copy-btn" onclick="copyPw()" title="Copy">📋</button>
+                </div>
+                <div id="genMsg"></div>
+                <button class="btn btn-purple" onclick="generateAndSave()">⟳ Generate &amp; Save Password</button>
+            </div>
+
+            <!-- View -->
+            <div id="view" class="section">
+                <div id="pwList"></div>
+            </div>
+
+            <!-- Search -->
+            <div id="search" class="section">
+                <div class="field">
+                    <label>Website name</label>
+                    <input type="text" id="searchInput" placeholder="e.g. gmail.com" />
+                </div>
+                <div id="searchResult"></div>
+                <button class="btn btn-blue" onclick="searchPw()">🔍 Search Password</button>
+            </div>
+
+            <!-- Delete -->
+            <div id="delete" class="section">
+                <div class="field">
+                    <label>Website name</label>
+                    <input type="text" id="deleteInput" placeholder="e.g. gmail.com" />
+                </div>
+                <div id="deleteMsg"></div>
+                <button class="btn btn-red" onclick="deletePw()">🗑 Delete Password</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+        // passwords stored in memory (works without a server)
+        let passwords = [];
+
+        function generatePassword(length) {
+            let pw = '';
+            for (let i = 0; i < length; i++) pw += CHARS[Math.floor(Math.random() * CHARS.length)];
+            return pw;
+        }
+
+        function updateLength(val) {
+            document.getElementById('lengthVal').textContent = val;
+            const pct = (val - 8) / 4;
+            const colors = ['#E24B4A', '#EF9F27', '#639922'];
+            ['s1', 's2', 's3'].forEach((id, i) => {
+                document.getElementById(id).style.background = pct >= (i + 1) / 3 ? colors[i] : '#ddd';
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelector('[onclick="switchTab(\'' + tab + '\')"]').classList.add('active');
+            document.getElementById(tab).classList.add('active');
+            if (tab === 'view') renderList();
+        }
+
+        function showMsg(id, text, type) {
+            const el = document.getElementById(id);
+            el.innerHTML = '<div class="msg ' + type + '">' + text + '</div>';
+            setTimeout(() => { el.innerHTML = ''; }, 3000);
+        }
+
+        function generateAndSave() {
+            const length = parseInt(document.getElementById('lengthSlider').value);
+            const website = document.getElementById('websiteInput').value.trim();
+            if (!website) { showMsg('genMsg', 'Please enter a website name.', 'error'); return; }
+            const pw = generatePassword(length);
+            passwords.push({ website, password: pw });
+            document.getElementById('generatedPw').textContent = pw;
+            document.getElementById('resultBox').style.display = 'flex';
+            document.getElementById('websiteInput').value = '';
+            showMsg('genMsg', 'Password saved for <strong>' + esc(website) + '</strong>', 'success');
+        }
+
+        function copyPw() {
+            const pw = document.getElementById('generatedPw').textContent;
+            navigator.clipboard.writeText(pw).catch(() => { });
+        }
+
+        function renderList() {
+            const list = document.getElementById('pwList');
+            if (!passwords.length) {
+                list.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>No passwords saved yet</div>';
+                return;
+            }
+            list.innerHTML = '<div class="pw-list">' + passwords.map((p, i) =>
+                '<div class="pw-item">' +
+                '<div style="min-width:0">' +
+                '<div class="pw-site">' + esc(p.website) + '</div>' +
+                '<div class="pw-pass" id="pw-' + i + '" data-visible="false">' + '•'.repeat(Math.min(p.password.length, 16)) + '</div>' +
+                '</div>' +
+                '<div class="pw-actions">' +
+                '<button class="icon-btn" onclick="toggleVis(' + i + ')" title="Show/hide">👁</button>' +
+                '<button class="icon-btn" onclick="copyItem(' + i + ')" title="Copy">📋</button>' +
+                '<button class="icon-btn" onclick="delByIdx(' + i + ')" title="Delete">🗑</button>' +
+                '</div>' +
+                '</div>'
+            ).join('') + '</div>';
+        }
+
+        function toggleVis(i) {
+            const el = document.getElementById('pw-' + i);
+            const visible = el.dataset.visible === 'true';
+            el.textContent = visible ? '•'.repeat(Math.min(passwords[i].password.length, 16)) : passwords[i].password;
+            el.style.letterSpacing = visible ? '2px' : '0';
+            el.dataset.visible = String(!visible);
+        }
+
+        function copyItem(i) { navigator.clipboard.writeText(passwords[i].password).catch(() => { }); }
+
+        function delByIdx(i) { passwords.splice(i, 1); renderList(); }
+
+        function searchPw() {
+            const q = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (!q) { document.getElementById('searchResult').innerHTML = '<div class="msg error">Please enter a website name.</div>'; return; }
+            const found = passwords.filter(p => p.website.toLowerCase().includes(q));
+            if (!found.length) {
+                document.getElementById('searchResult').innerHTML = '<div class="msg error">No results for <strong>' + esc(q) + '</strong></div>';
+                return;
+            }
+            document.getElementById('searchResult').innerHTML =
+                '<div class="pw-list">' + found.map(p =>
+                    '<div class="pw-item" style="background:#E6F1FB">' +
+                    '<div><div class="pw-site" style="color:#0C447C">' + esc(p.website) + '</div>' +
+                    '<div class="pw-pass" style="letter-spacing:0;color:#185FA5">' + esc(p.password) + '</div></div>' +
+                    '</div>'
+                ).join('') + '</div>';
+        }
+
+        function deletePw() {
+            const website = document.getElementById('deleteInput').value.trim();
+            if (!website) { showMsg('deleteMsg', 'Please enter a website name.', 'error'); return; }
+            const before = passwords.length;
+            passwords = passwords.filter(p => !p.website.toLowerCase().includes(website.toLowerCase()));
+            if (passwords.length === before) { showMsg('deleteMsg', 'No password found for <strong>' + esc(website) + '</strong>', 'error'); return; }
+            showMsg('deleteMsg', 'Password deleted for <strong>' + esc(website) + '</strong>', 'success');
+            document.getElementById('deleteInput').value = '';
+        }
+
+        function esc(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        updateLength(10);
+    </script>
+</body>
+
+</html>
